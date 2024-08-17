@@ -11,6 +11,8 @@
 Usage
 -----
 
+Check out the 200 line cross platform UDP VOIP Server and Client in the [voip](voip) directory!
+
 There are examples inside the header file sources, but here's a simple introduction to each of the libraries:
 
 ### udp.h
@@ -62,7 +64,7 @@ int main() {
 Examples
 --------
 
-There are applicable examples in the [voip](voip) and [examples](examples) directories. Examples are very handy if you need to know what behavior to expect from a specific function. The VOIP Client in particular lets you explore more of the intricacies of the UDP library, including how to deal with package loss to an extent. That example has been tested to work across continents and is a good example of how to play around with networks in general.
+There are applicable examples in the [voip](voip) and [examples](examples) directories. Notable ones are the VOIP application and the HTTPS client.
 
 License
 -------

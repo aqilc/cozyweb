@@ -56,7 +56,7 @@ uint16_t session_id;
 
 void capture_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount) {
   static uint32_t seq = 0;
-  int data_len = frameCount * ma_get_bytes_per_frame(pDevice->capture.format, pDevice->capture.channels);
+  int data_len = frameCount * 2; // 2 bytes per sample
   
   struct voice_packet* pack = alloca(sizeof(struct voice_packet) + data_len);
   pack->id = session_id;
@@ -104,16 +104,12 @@ struct voice* push_voice_cli(int id) {
   return voices + voices_len - 1;
 }
 
-bool is_server = false;
 int main(const int argc, const char** argv) {
-  is_server = argc == 1;
-  
+  bool is_server = argc == 1;
   ma_device capture_device;
   ma_device playback_device;
-  udp_conn* conn;
-  if(is_server) conn = udp_serve(30000);
-  else conn = udp_connect(udp_resolve_host(argv[1], "30000", true, &(udp_addr) {}), false);
   
+  udp_conn* conn = is_server ? udp_serve(30000) : udp_connect(udp_resolve_host(argv[1], "30000", true, &(udp_addr) {}), false);
   if(conn->error) {
     printf("Error establishing a connection: %s\n", udp_error_str(conn->error));
     return 1;
@@ -147,31 +143,12 @@ int main(const int argc, const char** argv) {
   voices = calloc(1, sizeof(struct voice));
 
   while(true) {
-    while(!(is_server ? udp_recv_from : udp_recv)(conn)) {
-      if(conn->error) {
-        printf("Error: %s\n", udp_error_str(conn->error));
-        goto done;
-      }
-      if(_kbhit() && getchar()) goto done;
-      // Sleep(1);
-    }
+    while(!(is_server ? udp_recv_from : udp_recv)(conn))
+      if(conn->error || (_kbhit() && getchar())) goto done; // Lets you quit by pressing enter
     
-    struct voice_packet* packet = (struct voice_packet*) conn->data;
-    
-    // Sometimes, multiple packets are recieved at once in a single recv call, combine them
-    if(conn->data_len > sizeof(struct voice_packet) + packet->len) {
-      struct voice_packet* last_checked_packet = packet;
-      int last_checked_packet_len = last_checked_packet->len;
-      
-      while (conn->data_len - sizeof(struct voice_packet) > sizeof(struct voice_packet) + packet->len) {
-        last_checked_packet = (struct voice_packet*) ((char*) last_checked_packet->data + last_checked_packet_len);
-        last_checked_packet_len = last_checked_packet->len;
-        memmove(packet->data + packet->len, last_checked_packet->data, last_checked_packet_len);
-        packet->len += last_checked_packet_len;
-      }
-    }
-    
+    struct voice_packet* packet = (struct voice_packet*) conn->data;    
     struct voice* voice = NULL;
+    
     if(is_server) {
       for(int i = 0; i < voices_len; i++) {
         if(udp_addr_same(voices[i].addr, &conn->from)) {
@@ -191,8 +168,8 @@ int main(const int argc, const char** argv) {
       if(packet->seq <= voice->packet_seq) continue;
 
       packet->id = voice->id;
-      for(int i = 0; i < voices_len; i++)
-        if(voice->id != voices[i].id) udp_send_to(conn, voices[i].addr, packet, packet->len); //, printf("s");
+      for(int i = 0; i < voices_len; i++) // Broadcast packet
+        if(voice->id != voices[i].id) udp_send_to(conn, voices[i].addr, conn->data, conn->data_len);
       
     } else {
       for(int i = 0; i < voices_len; i++)
@@ -226,6 +203,7 @@ int main(const int argc, const char** argv) {
   }
 
 done:
+  if(conn->error) printf("Error: %s\n", udp_error_str(conn->error));
   if(!is_server) {
     ma_device_uninit(&capture_device);
     ma_device_uninit(&playback_device);

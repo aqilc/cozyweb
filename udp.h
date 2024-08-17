@@ -12,7 +12,7 @@
 //   UDP_MAX_BUFFERED_PACKETS: Maximum power of 2 number of packets that can be buffered   //
 //                             before being sent.                                          //
 //   UDP_DEFAULT_PACKET_ALLOCATION: Default size of the server's buffer for read packets.  //
-//   UDP_CONN_MESSAGES: On Windows, you can get messages such as a client disconnecting.   //
+//   UDP_CONN_MESSAGES: On Windows, you can get errors such as a client disconnecting.     //
 //                      This is very unreliable, so make sure to have a timeout check on   //
 //                      top if you rely on it.                                             //
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -153,7 +153,7 @@ struct udp_conn {
 
   udp_addr from;
   UDP_ERROR_DEFS
-  unsigned long data_len;
+  long data_len;
   unsigned long internal_max_packet_size;
 
   unsigned long packet_buf_len;
@@ -416,7 +416,7 @@ enum udp_send_result udp_send_to(udp_conn* server, udp_addr* addr, void* data, u
 
 static bool udp_ready_to_recv(udp_conn* server) {
   if(server->error) return false;
-  if(ioctl(server->sockhwnd, FIONREAD, &server->data_len) < 0) {
+  if(ioctl(server->sockhwnd, FIONREAD, (u_long*) &server->data_len) < 0) {
     server->error = UDP_ERR_FAILED_TO_READ_IO_LEN;
     return false;
   }
