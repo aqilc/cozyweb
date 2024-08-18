@@ -1,6 +1,6 @@
 <div align="center">
-	<h1>cozyweb</h1>
-	<p>Single file C99 header cross-platform networking libraries.</p>
+  <h1>cozyweb</h1>
+  <p>Single file C99 header cross-platform networking libraries.</p>
 </div>
 
 | Library | Description | LOC | Latest Version |
@@ -29,17 +29,22 @@ Here's a simple introduction to each of the libraries:
 #include "udp.h"
 
 int main() {
-		udp_conn* client = udp_connect(udp_resolve_host("localhost", "30000", true, &(udp_addr){}), false);
-		if(client->error) return !!printf("Error %d: %s\n", client->error, udp_error_str(client->error));
+    udp_conn* client = udp_connect(udp_resolve_host("localhost", "30000", true, &(udp_addr){}), false);
+    if(client->error) {
+      printf("Error %d: %s\n", client->error, udp_error_str(client->error));
+      return 1;
+    }
 
-		udp_send(client, "Hello from client!", sizeof("Hello from clie16!"));
-		
-		while(!udp_recv(client)); // Wait for a response from the server.
-		printf("Received \"%.*s\"\n", (int) client->data_len, (char*) client->data);
+    udp_send(client, "Hello from client!", sizeof("Hello from clie16!"));
+    
+    while(!udp_recv(client)); // Wait for a response from the server.
+    printf("Received \"%.*s\"\n", (int) client->data_len, (char*) client->data);
 
-		udp_close_n_free(client);
+    udp_close_n_free(client);
 }
 ```
+
+The `udp_recv()` and `udp_recv_from()` functions are non-blocking and return the response in the `udp_conn` struct, which contains a buffer with the data and the length. You can put these functions anywhere, including inside your game loop and it will take care of resolving requests in the background before you are ready to read!
 
 ### https.h
 
@@ -50,19 +55,20 @@ int main() {
 #include "include/https.h"
 
 int main() {
-		https_req* req = https_get("https://picsum.photos/600/800"); // both https and http work!
-		while(req->state == HTTPS_PENDING);// Sleep(20);
+    https_req* req = https_get("https://picsum.photos/600/800"); // http works too!
+    while(req->state == HTTPS_PENDING);// Sleep(20); // Wait for the request to complete.
 
-		if(req->state != HTTPS_COMPLETE) {
-				printf("Failed to get response\nStatus Code: %d\nReason: %s", req->status_code, req->req_failed_reason);
-				https_free(req);
-				return 1;
-		}
+    if(req->state != HTTPS_COMPLETE) {
+        printf("Failed to get response\nStatus Code: %d\nReason: %s", req->status_code,
+               req->req_failed_reason);
+        https_free(req);
+        return 1;
+    }
 
-		printf("Status: %d\n", req->status_code);
-		printf("Response Size: %u\n", req->data_len);
-		printf("Response: %.256s\n", (char const*) req->data);
-		https_free(req);
+    printf("Status: %d\n", req->status_code);
+    printf("Response Size: %u\n", req->data_len);
+    printf("Response: %.256s\n", (char const*) req->data);
+    https_free(req);
 }
 ```
 
