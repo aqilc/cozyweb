@@ -160,7 +160,7 @@ HTTPS_EXPORT char const* https_error_string(enum https_errors error);
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <winhttp.h>
-// #pragma comment(lib, "winhttp.lib")
+#pragma comment(lib, "winhttp.lib")
 #pragma comment(lib, "kernel32.lib")
 #else
 #error "Unsupported platform"
@@ -170,7 +170,10 @@ HTTPS_EXPORT char const* https_error_string(enum https_errors error);
 #define HTTPS_APPLICATION_NAME "httpsh/1.1"
 #endif
 
+#ifndef HTTPS_MIN_DATA_BUF_SIZE
 #define HTTPS_MIN_DATA_BUF_SIZE 1024
+#endif
+
 #define HTTPS_CONCAT2(a, b) a##b
 #define HTTPS_CONCAT(a, b) HTTPS_CONCAT2(a, b)
 
