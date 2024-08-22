@@ -6,7 +6,7 @@
 | Library | Description | LOC | Latest Version |
 |---------|-------------|-----|----------------|
 | **[udp.h](udp.h)** | Asynchronous Server and Client on a UDP connection, useful for VOIP and game servers. | 573 | 1.0.0 |
-| **[https.h](https.h)** | Asynchronous HTTPS and HTTP Client using 1 function call to issue a GET request. | 435 | 1.0.0 |
+| **[https.h](https.h)** | Asynchronous HTTPS and HTTP Client using 1 function call to issue a GET request. | 438 | 1.0.0 |
 
 Usage
 -----
