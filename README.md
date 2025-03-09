@@ -3,22 +3,119 @@
   <p>Single file C99 header cross-platform networking libraries.</p>
 </div>
 
-| Library | Description | LOC | Latest Version |
-|---------|-------------|-----|----------------|
-| **[udp.h](udp.h)** | Asynchronous Server and Client on a UDP connection, useful for VOIP and game servers. | 573 | 1.0.0 |
-| **[https.h](https.h)** | Asynchronous HTTPS and HTTP Client using 1 function call to issue a GET request. | 438 | 1.0.0 |
+| Library | Purpose | Description | LOC | Version |
+|---------|---------|-------------|-----|---------|
+| **[udp.h](udp.h)** | Real-time communication | Non-blocking UDP client/server for games, VOIP, and other low-latency applications | 573 | 1.0.0 |
+| **[https.h](https.h)** | Web resources | Simple HTTP/HTTPS client with one-function GET requests and asynchronous processing | 438 | 1.0.0 |
 
-Usage
------
+**cozyweb** focuses on providing minimalist, cross-platform networking libraries designed for developers who want to get things done without the complexity. Each library is contained in a single header file, requires minimal setup, and focuses on simplicity without sacrificing functionality.
 
-All you need to do to use this library is download it and put it in the same directory as your source code, and then look into it for the function it defines at the top (the exports) and the provided example! Put this at the top of where you want to use it:
+Getting Started
+---------------
+
+Include a library in your project with just two lines:
+
 ```c
-#define UDP_IMPLEMENTATION // or HTTPS_IMPLEMENTATION
-#include "udp.h" // or "https.h"
+#define UDP_IMPLEMENTATION  // or HTTPS_IMPLEMENTATION
+#include "udp.h"            // or "https.h"
 ```
-or optionally, put that by itself in a source file and build it separately.
 
-Here's a simple introduction to each of the libraries:
+Or include it in a separate source file if you prefer to build it separately.
+
+The Libraries
+-------------
+
+### 📡 udp.h
+
+A lightweight UDP library for building real-time networked applications:
+
+- Asynchronous, non-blocking I/O
+- Simple client and server implementations
+- Designed for game networking and voice applications
+- Cross-platform with minimal OS-specific code
+
+```c
+// UDP client example
+udp_conn* client = udp_connect(udp_resolve_host("localhost", "30000", true, &(udp_addr){}), false);
+udp_send(client, "Hello!", 7);
+    
+// Non-blocking poll based receive - perfect for game loops
+while(!udp_recv(client));
+
+printf("Got: %.*s\n", (int)client->data_len, (char*)client->data);
+```
+
+### 🌐 https.h
+
+A straightforward HTTP/HTTPS client that makes web requests painless:
+
+- One function call for GET requests
+- Asynchronous by default
+- Minimal memory footprint
+- Clean API for handling responses
+
+```c
+// Simple HTTP/HTTPS GET request
+https_req* req = https_get("https://api.example.com/data");
+while(req->state == HTTPS_PENDING); // Busy sleep while request resolves in another thread
+
+// Check if complete (non-blocking)
+if(req->state == HTTPS_COMPLETE) {
+  printf("Response (Status: %d): %.*s\n", req->status_code, (int)req->data_len, (char*)req->data);
+  https_free(req);
+}
+```
+
+Real-World Examples
+-------------------
+
+- **[VOIP Application](voip)**: A complete cross-platform voice chat system in just 200 lines of code
+- **[Examples Directory](examples)**: Sample code for UDP servers and HTTP clients
+
+Performance
+-----------
+
+These libraries prioritize efficiency alongside ease of use:
+
+- **UDP**: Direct wrapper around native socket APIs for minimal overhead
+- **HTTPS**: Performance comparable to cURL with support for concurrent requests
+
+Platform Support
+----------------
+
+- **udp.h**: Any system with BSD sockets (Windows, macOS, Linux, etc.)
+- **https.h**: Currently Windows-only (WinHTTP), with cURL support coming soon
+
+License
+-------
+
+Dual-licensed under MIT and Public Domain. Choose the license that best suits your project:
+
+- **MIT**: Simple permissive license
+- **Public Domain**: No copyright, completely free for any use
+
+FAQ
+---
+
+### How does cozyweb compare to alternatives?
+
+My aim was to remove all of the boilerplate and complexity that comes with interfacing with the web in C. I hated dealing with threads, learning about edge cases and library internals and having to know the HTTP/s protocol to even make a basic FETCH request. This is easy in languages like Javascript, so why not C? I couldn't find the answer to that, so I engineered a solution myself.
+
+In short, `cozyweb` is the simplest set of web libraries you will ever come across for C. While I may not offer every possible feature, I guarantee an exceptional developer experience and top-tier performance.
+
+### Are there alternatives?
+
+If cozyweb doesn't meet your needs, consider:
+- [cute_headers](https://github.com/RandyGaul/cute_headers)
+- [http.h](https://github.com/mattiasgustavsson/libs/blob/main/docs/http.md)
+- [enet](https://github.com/lsalzman/enet)
+- [SDL_net](https://github.com/libsdl-org/SDL_net)
+
+
+Starter Code
+------------
+
+This is provided for me and others, so anyone can easily just copy paste and start a project with **cozyweb**.
 
 ### udp.h
 
@@ -35,7 +132,7 @@ int main() {
       return 1;
     }
 
-    udp_send(client, "Hello from client!", sizeof("Hello from clie16!"));
+    udp_send(client, "Hello from client!", sizeof("Hello from client!"));
     
     while(!udp_recv(client)); // Wait for a response from the server.
     printf("Received \"%.*s\"\n", (int) client->data_len, (char*) client->data);
@@ -44,15 +141,13 @@ int main() {
 }
 ```
 
-The `udp_recv()` and `udp_recv_from()` functions are non-blocking and return the response in the `udp_conn` struct, which contains a buffer with the data and the length. You can put these functions anywhere, including inside your game loop and it will take care of resolving requests in the background before you are ready to read!
-
 ### https.h
 
 ```c
 #include <stdio.h>
 
 #define HTTPS_IMPLEMENTATION
-#include "include/https.h"
+#include "https.h"
 
 int main() {
     https_req* req = https_get("https://picsum.photos/600/800"); // http works too!
@@ -65,53 +160,7 @@ int main() {
         return 1;
     }
 
-    printf("Status: %d\n", req->status_code);
-    printf("Response Size: %u\n", req->data_len);
-    printf("Response: %.256s\n", (char const*) req->data);
+    printf("Response (Status: %d): %.*s\n", req->status_code, (int)req->data_len, (char*)req->data);
     https_free(req);
 }
 ```
-
-Examples
---------
-
-Check out the 200 line cross platform UDP VOIP Server and Client in the [voip](voip) directory!
-
-There are more examples in the [examples](examples) directory. Notable ones are the UDP server and the HTTPS client.
-
-Performance
------------
-
-These libraries are designed to be efficient and easy to use at the same time. Benchmarks coming soon™.
-
-#### UDP
-
-The UDP library is just a wrapper around the native system calls, which makes it as fast as any other UDP library.
-
-#### HTTPS
-
-The HTTPS library is as fast as cURL, and supports many concurrent requests with almost no overhead.
-
-Supported Platforms
--------------------
-
-`udp.h` supports all systems with BSD sockets, it uses no Linux or Windows specific functions. `https.h` is currently a wrapper around WinHTTP, so only Windows is supported, but cURL support is coming soon.
-
-License
--------
-
-These libraries are all dual licenced under the MIT Licence and Public Domain. You can choose the licence that suits your project the best. The MIT Licence is a permissive licence that is short and to the point. The Public Domain licence is a licence that makes the software available to the public for free and with no copyright.
-
-FAQ
----
-
-> - ***There are many alternatives like cute_headers' cute_tls and cute_net. Why should I use cozyweb?***
-
-My experiences using cURL, cute_headers and many other solutions for interfacing with the web in C was not fun, especially in casual programs and games. Most of the libraries had a ton of boilerplate and enforced a ton of restrictions even for making a simple HTTP request. I was looking for a simple solution that didn't have me distracted trying to figure out the semantics of the library and the web every time I wanted to do something simple, and coming from other languages with simple HTTPS APIs I saw much room for improvement. `cozyweb` is going to be the simplest set of C libraries you can use to interface with the web to get resources or files for your games or casual programs.
-
-> - ***These libraries don't fit my need. What are some others?***
-
-- [cute_headers](https://github.com/RandyGaul/cute_headers)
-- [http.h](https://github.com/mattiasgustavsson/libs/blob/main/docs/http.md)
-- [enet](https://github.com/lsalzman/enet)
-- [SDL_net](https://github.com/libsdl-org/SDL_net)
