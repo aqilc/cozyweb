@@ -8,7 +8,16 @@
 | **[udp.h](udp.h)** | Real-time communication | Non-blocking UDP client/server for games, VOIP, and other low-latency applications | 573 | 1.0.0 |
 | **[https.h](https.h)** | Web resources | Simple HTTP/HTTPS client with one-function GET requests and asynchronous processing | 438 | 1.0.0 |
 
-**cozyweb** focuses on providing minimalist, cross-platform networking libraries designed for developers who want to get things done without the complexity. Each library is contained in a single header file, requires minimal setup, and focuses on simplicity without sacrificing functionality.
+
+Why cozyweb?
+------------
+
+- **Minimal API surface** - Simple functions that do exactly what you need
+- **Zero dependencies** - No external libraries required
+- **Non-blocking by default** - Perfect for game loops and UI applications
+- **Single-file implementation** - Just include and go
+- **Battle-tested** - Powers real applications including a complete VOIP system
+
 
 Getting Started
 ---------------
@@ -21,6 +30,7 @@ Include a library in your project with just two lines:
 ```
 
 Or include it in a separate source file if you prefer to build it separately.
+
 
 The Libraries
 -------------
@@ -69,7 +79,7 @@ if(req->state == HTTPS_COMPLETE) {
 Real-World Examples
 -------------------
 
-- **[VOIP Application](voip)**: A complete cross-platform voice chat system in just 200 lines of code
+- **[VOIP Application](voip)**: A complete cross-platform voice chat system in just 200 lines of code in [`voip.c`](voip/voip.c).
 - **[Examples Directory](examples)**: Sample code for UDP servers and HTTP clients
 
 Performance
@@ -77,14 +87,14 @@ Performance
 
 These libraries prioritize efficiency alongside ease of use:
 
-- **UDP**: Direct wrapper around native socket APIs for minimal overhead
-- **HTTPS**: Performance comparable to cURL with support for concurrent requests
+- **`udp.h`**: Direct wrapper around native socket APIs for minimal overhead
+- **`https.h`**: Performance comparable to cURL with support for concurrent requests
 
 Platform Support
 ----------------
 
-- **udp.h**: Any system with BSD sockets (Windows, macOS, Linux, etc.)
-- **https.h**: Currently Windows-only (WinHTTP), with cURL support coming soon
+- **`udp.h`**: Any system with BSD sockets (Windows, macOS, Linux, etc.)
+- **`https.h`**: Currently Windows-only (WinHTTP), with cURL support coming soon
 
 License
 -------
