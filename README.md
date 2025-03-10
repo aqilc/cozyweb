@@ -12,11 +12,11 @@
 Why cozyweb?
 ------------
 
-- **Minimal API surface** - Simple functions that do exactly what you need
-- **Zero dependencies** - No external libraries required
-- **Non-blocking by default** - Perfect for game loops and UI applications
-- **Single-file implementation** - Just include and go
-- **Battle-tested** - Powers real applications including a complete VOIP system
+- **Minimal API surface** - Simple functions that do exactly what you need.
+- **Zero dependencies** - No external libraries required.
+- **Non-blocking by default** - Perfect for game loops and UI applications.
+- **Single-file implementation** - Just include and go.
+- **Battle-tested** - Powers my games and put under real world stress with a VOIP App usable across countries.
 
 
 Getting Started
@@ -32,8 +32,8 @@ Include a library in your project with just two lines:
 Or include it in a separate source file if you prefer to build it separately.
 
 
-The Libraries
--------------
+Libraries
+---------
 
 ### 📡 udp.h
 
@@ -122,10 +122,10 @@ If cozyweb doesn't meet your needs, consider:
 - [SDL_net](https://github.com/libsdl-org/SDL_net)
 
 
-Starter Code
-------------
+Sample Programs
+---------------
 
-This is provided for me and others, so anyone can easily just copy paste and start a project with **cozyweb**.
+Complete sample programs to show how they work and common practices:
 
 ### udp.h
 
