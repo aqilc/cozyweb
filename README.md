@@ -159,8 +159,8 @@ int main() {
 #define HTTPS_IMPLEMENTATION
 #include "https.h"
 
-int main() {
-    https_req* req = https_get("https://picsum.photos/600/800"); // http works too!
+int main(int argc, char** argv) {
+    https_req* req = https_get(argc == 1 ? argv[0] : "https://www.google.com/"); // http works too!
     while(req->state == HTTPS_PENDING);// Sleep(20); // Wait for the request to complete.
 
     if(req->state != HTTPS_COMPLETE) {

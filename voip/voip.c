@@ -1,8 +1,8 @@
 /**
 
 No dependencies VOIP client! Compile with:
-  gcc net/voip/voip.c -o voip -lm
-  clang-cl /MDd /Z7 /EHsc /Fo"./bin/" net/voip/voip.c
+  gcc voip.c -o voip -lm
+  clang-cl /MDd /Z7 /EHsc /Fo"./bin/" voip.c
 
 Usage:
   There's a "server" and a "client". You can run the server with `voip` and the client with `voip <server_ip>`.
