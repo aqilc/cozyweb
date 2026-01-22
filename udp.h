@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////////////////////
-// udp.h v1.0 by @aqilc                                                                    //
+// udp.h v1.0.1 by @aqilc                                                                  //
 // Licence: MIT                                                                            //
 // Part of the Cozyweb project.                                                            //
 //                                                                                         //
@@ -185,9 +185,14 @@ udp_ipv4_addr udp_external_ipv4_addr();
 
 #endif
 
-// #define UDP_IMPLEMENTATION
+#define UDP_IMPLEMENTATION
 #ifdef UDP_IMPLEMENTATION
 #include <stdlib.h>
+
+
+// Look into reliable UDP with:
+// https://github.com/skywind3000/kcp/blob/master/README.en.md
+
 
 #ifdef _WIN32
 // https://learn.microsoft.com/en-us/windows/win32/winsock/windows-sockets-error-codes-2
@@ -314,7 +319,7 @@ fail:
   return server;
 }
 
-udp_conn* udp_serve(unsigned short port) {
+udp_conn* udp_serve(uint16_t port) {
   return udp_connect(memcpy(&(udp_addr) { .addrlen = sizeof(struct sockaddr_in) }, &(struct sockaddr_in) {
     .sin_family = AF_INET,
     .sin_port = htons(port),
@@ -348,7 +353,7 @@ static enum udp_send_result udp_queue_packet(udp_conn* server, udp_addr* addr, v
   } else {
     *packet = (struct udp_packet) {
       .data = memcpy(malloc(len), data, len),
-      .len = len, .internal_max_len = len, .to = packet->to
+      .len = len, .internal_max_len = len, .to = packet->to // This was the preallocated buffer in alloc_tos
     };
     if(addr) memcpy(packet->to, addr, sizeof(udp_addr));
     else packet->to->addrlen = 0;
@@ -401,7 +406,7 @@ enum udp_send_result udp_send(udp_conn* server, void* data, uint16_t len) {
 }
 
 enum udp_send_result udp_send_to(udp_conn* server, udp_addr* addr, void* data, uint16_t len) {
-  if(udp_try_flush_queue(server)) return udp_queue_packet(server, NULL, data, len);
+  if(udp_try_flush_queue(server)) return udp_queue_packet(server, addr, data, len);
   if(server->error) return UDP_SEND_FAILED;
   
   if(sendto(server->sockhwnd, data, len, 0, (struct sockaddr*) &addr->storage, addr->addrlen) < 0) {
@@ -436,10 +441,8 @@ bool udp_recv(udp_conn* server) {
   server->data_len = recv(server->sockhwnd, server->data, server->data_len, 0);
   if(server->data_len == -1) {
 #if defined(UDP_CONN_MESSAGES) && defined(_WIN32)
-    if(UDP_SOCKET_ERROR == WSAECONNRESET) {
+    if(UDP_SOCKET_ERROR == WSAECONNRESET)
       server->msg = UDP_CLIENT_DISCONNECTED;
-      return UDP_SEND_OK;
-    }
 #endif
     server->data_len = 0;
     server->error = UDP_ERR_RECV_FAILED;
@@ -459,10 +462,8 @@ bool udp_recv_from(udp_conn* server) {
                               (struct sockaddr*) &server->from.storage, &server->from.addrlen);
   if(server->data_len == -1) {
 #if defined(UDP_CONN_MESSAGES) && defined(_WIN32)
-    if(UDP_SOCKET_ERROR == WSAECONNRESET) {
+    if(UDP_SOCKET_ERROR == WSAECONNRESET)
       server->msg = UDP_CLIENT_DISCONNECTED;
-      return UDP_SEND_OK;
-    }
 #endif
     server->data_len = 0;
     server->error = UDP_ERR_RECV_FAILED;
