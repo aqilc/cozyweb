@@ -185,7 +185,7 @@ udp_ipv4_addr udp_external_ipv4_addr();
 
 #endif
 
-#define UDP_IMPLEMENTATION
+// #define UDP_IMPLEMENTATION
 #ifdef UDP_IMPLEMENTATION
 #include <stdlib.h>
 
